@@ -26,7 +26,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                     )
 
 
-planets = {
+PLANETS = {
     'mercury' : 'Меркурий',
     'venus' : 'Венера',
     'mars' : 'Марс',
@@ -37,49 +37,54 @@ planets = {
     'pluto' : 'Плутон',
 }
 
-# start command
-def greet_user(bot, update):
-    text = 'Вызван /start \n' 
-    text += 'Наберите /planet и название планеты на английском для того, чтобы узнать в каком созвездии находится планета\n'
-    text += 'Наберите /help чтобы узнать названия планет на Английском\n'
-#   logging.info(text)
+
+def print_start_text(bot, update):
+    text = (
+        'Вызван /start\n'
+        'Наберите /planet и название планеты на английском для того, чтобы узнать в каком созвездии находится планета\n'
+        'Наберите /help чтобы узнать названия планет на Английском\n'
+    )   
     update.message.reply_text(text)
 
 
-# help command
-def help_user(bot, update):
-    text = str()
-    for eng_name, name in planets.items():
-        text += f'{name} - {eng_name.capitalize()}\n'
+def print_planets_list(bot, update):
+    text = '\n'.join([f'{name} - {eng_name.capitalize()}' for eng_name, name in PLANETS.items()])
     update.message.reply_text(text)
 
 
-# planet command
 def show_planet_constellation(bot, update):
-    planet = update.message.text.split()
-    try:         
-        if planets.get(planet[1].lower()):
+    query_params = update.message.text.split()
+    try:
+        selected_planet = query_params[1].lower()
+        if PLANETS.get(selected_planet):
             date = datetime.date.today()
 
-            f = getattr(ephem, planet[1].lower().capitalize())
+            f = getattr(ephem, selected_planet.capitalize())
             constellation_name = ephem.constellation( f(date) )
 
-            text = f'Вы выбрали планету - {planets.get(planet[1].lower())}\n'
-            text += f'На сегодняшнюю дату ({date}) планета находится в созвездии: {constellation_name}'
+            text = (
+                f'Вы выбрали планету - {PLANETS.get(selected_planet)}\n'
+                f'На сегодняшнюю дату ({date}) планета находится в созвездии: {constellation_name}'
+            )
         else:
-            text = 'Планета не выбрана или указана несуществующая планета\n'
-            text += 'Пожалуйста, воспользуйтесь коммендой /help для просмотра списка поддерживаемых планет'
+            text = (
+                'Планета не выбрана или указана несуществующая планета\n'
+                'Пожалуйста, воспользуйтесь коммендой /help для просмотра списка поддерживаемых планет'
+            )          
     except AttributeError:
-        text = 'Нет данных по выбраной планете\n'
-        text += 'Пожалуйста, воспользуйтесь коммендой /help для просмотра списка поддерживаемых планет'
+        text = (
+            'Нет данных по выбраной планете\n'
+            'Пожалуйста, воспользуйтесь коммендой /help для просмотра списка поддерживаемых планет'
+        )
     except IndexError:
-        text = 'Вы вызвали комманду /planet без параметров\n'
-        text += 'Пожалуйста, воспользуйтесь коммендой /help для просмотра списка поддерживаемых планет'
+        text = (
+            'Вы вызвали комманду /planet без параметров\n'
+            'Пожалуйста, воспользуйтесь коммендой /help для просмотра списка поддерживаемых планет'
+        )
 
     update.message.reply_text(text)
 
 
-# message handler
 def talk_to_me(bot, update):
     user_text = f"Привет, {update.message.chat.first_name}! Ты написал: " + update.message.text
     logging.info("User: %s, Chat id: %s, Message: %s", update.message.chat.username,
@@ -87,15 +92,14 @@ def talk_to_me(bot, update):
     update.message.reply_text(user_text)
 
 
-# сonnection
 def main(): 
     mybot = Updater (settings.API_KEY, request_kwargs=settings.PROXY )
 
     logging.info('Бот запускается')
     
     dp = mybot.dispatcher
-    dp.add_handler(CommandHandler("start", greet_user))
-    dp.add_handler(CommandHandler("help", help_user))
+    dp.add_handler(CommandHandler("start", print_start_text))
+    dp.add_handler(CommandHandler("help", print_planets_list))
     dp.add_handler(CommandHandler("planet", show_planet_constellation))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
@@ -103,5 +107,4 @@ def main():
     mybot.idle()
 
 
-# run
 main()
