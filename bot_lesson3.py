@@ -83,12 +83,12 @@ def get_user_emo(user_data):
 
 
 def get_keyboard():
-    contact_button = KeyboardButton('Прислать контакты', request_contact=True)
-    location_button = KeyboardButton('Прислать локацию', request_location=True)
+    contact_button = KeyboardButton('Отправить свои контакты', request_contact=True)
+    location_button = KeyboardButton('Отправить свою локацию', request_location=True)
     my_keyboard = ReplyKeyboardMarkup(  [
                                             ['Прислать котика', 'Изменить аватарку'],
                                             [contact_button, location_button],
-                                        ] 
+                                        ], resize_keyboard=True
                                     )
     return my_keyboard
 
